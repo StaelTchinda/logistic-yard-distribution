@@ -1,0 +1,7 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# uv-managed virtual environment (commit uv.lock, not the venv)
+.venv/

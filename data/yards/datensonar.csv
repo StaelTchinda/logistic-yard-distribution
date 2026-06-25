@@ -1,0 +1,13 @@
+name,columns,rows,layers,bottom_left_corner_x,bottom_left_corner_y
+Block 1,50,10,5,20,20
+Block 2,90,10,5,80,20
+Block 3,50,10,5,20,40
+Block 4,90,10,5,80,40
+Block 5,50,10,5,20,60
+Block 6,90,10,5,80,60
+Block 7,50,10,5,20,100
+Block 8,50,10,5,100,100
+Block 9,50,10,5,180,20
+Block 10,50,10,5,180,40
+Block 11,50,10,5,180,60
+Block 12,50,10,5,180,100

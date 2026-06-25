@@ -1,0 +1,8 @@
+name: "First fit"
+description: "Baseline: one catch-all rule fills the whole yard from the bottom-left, X then Y then Z."
+rules:
+  - description: "Everything, anywhere"
+    sort_order: 1
+    conditions: []
+    region: {x: [null, null], y: [null, null], z: [null, null]}
+    stacking: {start: bottom_left, order: [x, y, z]}

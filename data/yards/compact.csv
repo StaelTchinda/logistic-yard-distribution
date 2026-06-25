@@ -1,0 +1,4 @@
+name,columns,rows,layers,bottom_left_corner_x,bottom_left_corner_y
+A,4,4,4,0,0
+B,4,4,4,8,0
+C,6,6,3,0,8

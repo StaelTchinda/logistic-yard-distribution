@@ -1,0 +1,19 @@
+name: "Small demo yard"
+description: "Three small blocks (99 slots) for quick experiments and clear visuals."
+yard:
+  blocks:
+    - name: "A"
+      columns: 4
+      rows: 3
+      layers: 3
+      bottom_left_corner: {x: 0, y: 0, z: 0}
+    - name: "B"
+      columns: 4
+      rows: 3
+      layers: 3
+      bottom_left_corner: {x: 6, y: 0, z: 0}
+    - name: "C"
+      columns: 3
+      rows: 3
+      layers: 3
+      bottom_left_corner: {x: 12, y: 0, z: 0}

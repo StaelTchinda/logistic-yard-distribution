@@ -1,0 +1,27 @@
+name: "Quay proximity"
+description: "Route by outbound mode: sea near the quay (low x), road near the gate (high x), rail to the side blocks."
+rules:
+  - description: "Sea exports near the quay"
+    sort_order: 10
+    conditions:
+      - {attribute: outbound_mode, values: [deep_sea, feeder]}
+    region: {x: [10, 40], y: [0, 2], z: [0, 4]}
+    stacking: {start: bottom_left, order: [z, x, y]}
+    options: [weight_relevant]
+  - description: "Rail to the side blocks"
+    sort_order: 20
+    conditions:
+      - {attribute: outbound_mode, values: [rail]}
+    region: {x: [0, 4], y: [10, 24], z: [0, 4]}
+    stacking: {start: bottom_left, order: [z, x, y]}
+  - description: "Truck near the gate"
+    sort_order: 30
+    conditions:
+      - {attribute: outbound_mode, values: [truck]}
+    region: {x: [60, 92], y: [0, 2], z: [0, 4]}
+    stacking: {start: bottom_left, order: [z, x, y]}
+  - description: "Everything else into the large block"
+    sort_order: 9999
+    conditions: []
+    region: {x: [20, 69], y: [20, 29], z: [0, 4]}
+    stacking: {start: bottom_left, order: [z, x, y]}

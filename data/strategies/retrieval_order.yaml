@@ -1,0 +1,23 @@
+name: "Retrieval order"
+description: "Group by direction into dedicated blocks; weight-relevant stacking keeps heavy low and earlier-leaving boxes on top."
+rules:
+  - description: "Exports -> blocks 2-6"
+    sort_order: 10
+    conditions:
+      - {attribute: direction, values: [export]}
+    region: {x: [10, 50], y: [0, 2], z: [0, 4]}
+    stacking: {start: bottom_left, order: [x, y, z]}
+    options: [weight_relevant]
+  - description: "Imports -> blocks 7-10"
+    sort_order: 20
+    conditions:
+      - {attribute: direction, values: [import]}
+    region: {x: [60, 92], y: [0, 2], z: [0, 4]}
+    stacking: {start: bottom_left, order: [x, y, z]}
+    options: [weight_relevant]
+  - description: "Everything else into the large block"
+    sort_order: 9999
+    conditions: []
+    region: {x: [20, 69], y: [20, 29], z: [0, 4]}
+    stacking: {start: bottom_left, order: [x, y, z]}
+    options: [weight_relevant]

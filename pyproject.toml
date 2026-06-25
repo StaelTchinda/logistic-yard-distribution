@@ -1,0 +1,16 @@
+[project]
+name = "logistic-yard-distribution"
+version = "0.1.0"
+description = "Rule-based modeling of container distribution strategies in a terminal yard."
+requires-python = ">=3.10"
+dependencies = ["pyyaml", "rich", "questionary"]
+
+[dependency-groups]
+dev = ["pytest>=7"]
+
+[tool.uv]
+package = false            # manage the venv + deps only; do not build/install this project
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]   # repo root on sys.path so `import src.models...` resolves

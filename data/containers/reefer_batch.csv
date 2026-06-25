@@ -1,0 +1,11 @@
+id,size,type,status,weight,inbound_mode,outbound_mode,direction,service,input_vessel,output_vessel
+RB-0,40,reefer,full,medium,deep_sea,rail,import,,Polar-Queen,
+RB-1,40,reefer,full,medium,deep_sea,rail,import,,Polar-Queen,
+RB-2,40,reefer,full,light,deep_sea,rail,import,,Polar-Queen,
+RB-3,40,reefer,full,light,deep_sea,truck,import,,Polar-Queen,
+RB-4,40,reefer,full,heavy,deep_sea,truck,import,,Polar-Queen,
+RB-5,20,dry,full,medium,deep_sea,truck,import,customs,Polar-Queen,
+RB-6,20,dry,full,heavy,deep_sea,rail,import,,Polar-Queen,
+RB-7,20,dry,empty,light,deep_sea,truck,import,washing,Polar-Queen,
+RB-8,40,reefer,full,medium,deep_sea,rail,import,,Polar-Queen,
+RB-9,40,reefer,full,heavy,deep_sea,truck,import,,Polar-Queen,

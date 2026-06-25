@@ -1,0 +1,13 @@
+id,size,type,status,weight,inbound_mode,outbound_mode,direction,service,input_vessel,output_vessel
+RUSH-A0,40,dry,full,heavy,truck,deep_sea,export,,,Atlantic-Star
+RUSH-A1,40,dry,full,heavy,truck,deep_sea,export,,,Atlantic-Star
+RUSH-A2,40,dry,full,medium,truck,deep_sea,export,,,Atlantic-Star
+RUSH-A3,20,dry,full,medium,truck,deep_sea,export,,,Atlantic-Star
+RUSH-A4,20,dry,full,light,rail,deep_sea,export,,,Atlantic-Star
+RUSH-A5,20,dry,full,light,rail,deep_sea,export,,,Atlantic-Star
+RUSH-B0,40,dry,full,heavy,truck,deep_sea,export,,,Baltic-Wind
+RUSH-B1,40,reefer,full,medium,truck,deep_sea,export,,,Baltic-Wind
+RUSH-B2,20,dry,full,medium,truck,deep_sea,export,,,Baltic-Wind
+RUSH-B3,20,hazardous,full,heavy,truck,deep_sea,export,seal,,Baltic-Wind
+RUSH-B4,20,dry,full,light,truck,deep_sea,export,,,Baltic-Wind
+RUSH-B5,40,dry,full,light,truck,deep_sea,export,,,Baltic-Wind
