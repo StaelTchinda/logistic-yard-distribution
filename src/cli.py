@@ -25,7 +25,13 @@ from src.loaders.catalog import (
 from src.loaders.paths import data_root
 from src.models.strategy import evaluate, evaluate_all
 from src.summary import summarize_containers
-from src.view import render_report, render_score, render_summary, render_yard
+from src.view import (
+    animate_fill,
+    render_report,
+    render_score,
+    render_summary,
+    render_yard,
+)
 
 console = Console()
 
@@ -59,7 +65,7 @@ def cmd_list(root) -> int:
     return 0
 
 
-def cmd_run(root, yard_key, dataset_key, strategy_key, view: bool) -> int:
+def cmd_run(root, yard_key, dataset_key, strategy_key, view: bool, animate: bool) -> int:
     yards, datasets, strategies = _catalogs(root)
     ye = _resolve(yards, yard_key, "yard")
     de = _resolve(datasets, dataset_key, "dataset")
@@ -74,10 +80,12 @@ def cmd_run(root, yard_key, dataset_key, strategy_key, view: bool) -> int:
         f"[bold]{strategy.name}[/bold] on [bold]{ye.label}[/bold] "
         f"with [bold]{de.key}[/bold] ({len(containers)} containers)"
     )
-    if view:
+    if view and not animate:
         console.print(render_yard(yard, None, title="START (empty)"))
     result = evaluate(strategy, yard, containers)
-    if view:
+    if animate:
+        animate_fill(yard, result, title=f"Filling — {strategy.name}", console=console)
+    elif view:
         console.print(render_yard(yard, result, title="END (filled)"))
     console.print(render_score(result.score, title=f"Score — {strategy.name}"))
     if result.unplaced:
@@ -153,9 +161,12 @@ def run_interactive(root) -> int:
         if strategy_entry is None:
             return 0
         strategy = load_strategy(strategy_entry.path)
-        console.print(render_yard(yard, None, title="START (empty)"))
         result = evaluate(strategy, yard, containers)
-        console.print(render_yard(yard, result, title=f"END — {strategy.name}"))
+        if questionary.confirm("Animate the yard filling up?", default=True).ask():
+            animate_fill(yard, result, title=f"Filling — {strategy.name}", console=console)
+        else:
+            console.print(render_yard(yard, None, title="START (empty)"))
+            console.print(render_yard(yard, result, title=f"END — {strategy.name}"))
         console.print(render_score(result.score, title=f"Score — {strategy.name}"))
         if result.unplaced:
             console.print(f"[yellow]{len(result.unplaced)} containers unplaced[/yellow]")
@@ -188,6 +199,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--dataset")
     parser.add_argument("--strategy")
     parser.add_argument("--view", action="store_true", help="render START/END yard grids")
+    parser.add_argument(
+        "--animate", action="store_true", help="animate the yard filling up (with --run)"
+    )
     args = parser.parse_args(argv)
 
     try:
@@ -203,7 +217,7 @@ def main(argv: list[str] | None = None) -> int:
         if missing:
             console.print(f"[red]--run needs --{', --'.join(missing)}[/red]")
             return 2
-        return cmd_run(root, args.yard, args.dataset, args.strategy, args.view)
+        return cmd_run(root, args.yard, args.dataset, args.strategy, args.view, args.animate)
     if args.compare:
         if not (args.yard and args.dataset):
             console.print("[red]--compare needs --yard and --dataset[/red]")

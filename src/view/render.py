@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+import os
+import time
+
 from rich.console import Console, Group
+from rich.live import Live
 from rich.panel import Panel
 from rich.style import Style
 from rich.table import Table
@@ -16,13 +20,20 @@ _BG_BLUE = "#6f93c4"  # the yard ground / driving lanes
 _OLIVE = "#a7a13c"  # a block (empty)
 _GREEN = "#4c9d4c"  # a block (full)
 
+# How dark a completely full block gets: 1.0 keeps full brightness, lower = darker.
+_FULL_DIM = 0.45
+
 
 def _block_color(ratio: float) -> str:
-    """Interpolate olive (empty) -> green (full)."""
+    """Empty -> full: shift olive to green, then darken as it fills.
+
+    The hue moves olive (empty) -> green, and brightness scales down from 1.0
+    toward ``_FULL_DIM`` so a fuller block reads as a deeper, darker green."""
     ratio = max(0.0, min(1.0, ratio))
     a = (0xA7, 0xA1, 0x3C)
     b = (0x4C, 0x9D, 0x4C)
-    rgb = tuple(round(a[i] + (b[i] - a[i]) * ratio) for i in range(3))
+    dim = 1.0 - (1.0 - _FULL_DIM) * ratio
+    rgb = tuple(round((a[i] + (b[i] - a[i]) * ratio) * dim) for i in range(3))
     return "#%02x%02x%02x" % rgb
 
 
@@ -126,8 +137,106 @@ def render_yard(
     panel = Panel(body, title=title, border_style="#2b3a55", expand=False)
     if result is None:
         return panel
-    legend = Text("olive = empty   →   green = full", style="dim")
+    legend = Text("olive = empty   →   dark green = full", style="dim")
     return Group(panel, legend)
+
+
+class _PartialResult:
+    """A stand-in for ``EvaluationResult`` that exposes only the first ``n`` placements,
+    which is all ``render_yard`` reads. Lets us replay a fill frame-by-frame for free."""
+
+    def __init__(self, full: EvaluationResult, n: int):
+        self._full = full
+        self.container_coords = full.container_coords[:n]
+
+
+# Animation defaults, overridable per call or via env vars (env wins only when the
+# caller doesn't pass an explicit value). The frame cap is what keeps an 8k-container
+# fill fast: we draw at most this many frames no matter how many containers there are.
+_ANIM_FPS = 24.0  # YARD_ANIM_FPS
+_ANIM_MAX_FRAMES = 60  # YARD_ANIM_FRAMES — cap on total frames (0 / "none" = uncapped)
+
+
+def _env_float(name: str, default):
+    raw = os.environ.get(name)
+    if raw is None or raw.strip() == "":
+        return default
+    try:
+        return float(raw)
+    except ValueError:
+        return default
+
+
+def _env_int(name: str, default):
+    raw = os.environ.get(name)
+    if raw is None or raw.strip() == "":
+        return default
+    if raw.strip().lower() in ("none", "off", "0"):
+        return 0
+    try:
+        return int(float(raw))
+    except ValueError:
+        return default
+
+
+def animate_fill(
+    yard: Yard,
+    result: EvaluationResult,
+    *,
+    title: str = "Filling yard",
+    fps: float | None = None,
+    step: int | None = None,
+    max_frames: int | None = None,
+    console: Console | None = None,
+):
+    """Animate the yard filling up, revealing one batch of containers per frame.
+
+    Containers in ``result`` are stored in placement order, so revealing them
+    progressively replays exactly how the chosen strategy filled the yard. The final
+    frame is the same picture ``render_yard(yard, result)`` would draw.
+
+    Speed is bounded by frame *count*, not container count: for a big fill we batch
+    many containers into each of at most ``max_frames`` frames, so 8k containers
+    animates as fast as 80. Tunables (explicit arg wins, else env var, else default):
+
+    * ``fps`` / ``YARD_ANIM_FPS`` — frames per second.
+    * ``max_frames`` / ``YARD_ANIM_FRAMES`` — cap on total frames (0 = uncapped).
+    * ``step`` / ``YARD_ANIM_STEP`` — containers revealed per frame; overrides the
+      cap when set (use 1 for the old one-per-frame behaviour).
+    """
+    console = console or Console()
+    total = len(result.container_coords)
+
+    fps = _env_float("YARD_ANIM_FPS", _ANIM_FPS) if fps is None else fps
+    max_frames = (
+        _env_int("YARD_ANIM_FRAMES", _ANIM_MAX_FRAMES) if max_frames is None else max_frames
+    )
+    if step is None:
+        step = _env_int("YARD_ANIM_STEP", 0)  # 0 -> derive from the frame cap
+
+    # Pick a step so we draw at most ``max_frames`` frames, unless step was forced.
+    if step <= 0:
+        step = 1 if max_frames <= 0 else max(1, -(-total // max_frames))  # ceil div
+
+    delay = 1.0 / fps if fps and fps > 0 else 0.0
+
+    # frame counts: 0 (empty), step, 2*step, ..., total
+    counts = list(range(0, total, step))
+    if not counts or counts[-1] != total:
+        counts.append(total)
+
+    def frame(n: int):
+        partial = _PartialResult(result, n)
+        return render_yard(yard, partial, title=f"{title} — {n}/{total}")
+
+    with Live(
+        frame(0), console=console, refresh_per_second=max(1.0, fps), transient=False
+    ) as live:
+        for n in counts:
+            live.update(frame(n))
+            if delay and n != total:
+                time.sleep(delay)
+    return result
 
 
 def render_summary(summary: ContainerSummary):

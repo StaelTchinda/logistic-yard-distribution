@@ -1,5 +1,17 @@
 """Rich rendering helpers."""
 
-from src.view.render import render_report, render_score, render_summary, render_yard
+from src.view.render import (
+    animate_fill,
+    render_report,
+    render_score,
+    render_summary,
+    render_yard,
+)
 
-__all__ = ["render_yard", "render_summary", "render_score", "render_report"]
+__all__ = [
+    "render_yard",
+    "animate_fill",
+    "render_summary",
+    "render_score",
+    "render_report",
+]
