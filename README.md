@@ -36,15 +36,16 @@ A **condition** is a `FilterCriterion`: an attribute from `ContainerFilterableAt
 ```
 src/
   models/      Coordinate2D/3D, Container, TransportVessel, YardBlock, Slot, Yard, enums
-    filter/    ContainerFilterableAttribute, FilterCriterion, FilterRule, Strategy, engine
-    scoring/   metrics, weights, access points, result objects
+    strategy/  ContainerFilterableAttribute, FilterCriterion, FilterRule, Strategy
+    scoring/   weights, access points, result objects
+  services/    placement engine (filter/) and scoring metrics (scoring/)
   loaders/     load yards/containers/strategies + data discovery + catalog
   view/        rich rendering (yard grids, summary, score, comparison)
   summary.py   dataset statistics
   cli.py       interactive + headless entry point
 data/
   yards/       *.yaml or *.csv   (blocks: columns/rows/layers + bottom_left_corner x,y)
-  containers/  *.csv             (one row per container)
+  containers/  *.csv             (one row per container; optional flattened vessel columns)
   strategies/  *.yaml            (rule-sets)
 main.py · tests/ · pyproject.toml
 ```
@@ -68,8 +69,8 @@ uv sync                    # create .venv and install dependencies
 ```bash
 uv run python main.py                          # interactive dialogue
 uv run python main.py --list                   # list yards / datasets / strategies
-uv run python main.py --run --yard main --dataset mixed --strategy quay_proximity --view
-uv run python main.py --compare --yard main --dataset mixed
+uv run python main.py --run --yard small --dataset simple_test_data --strategy quay_proximity --view
+uv run python main.py --compare --yard small --dataset simple_test_data
 uv run pytest                                  # run the tests
 ```
 
@@ -95,7 +96,9 @@ yard:
 
 **A dataset** (`data/containers/<name>.csv`) — header columns: `id,size,type,status,weight,
 inbound_mode,outbound_mode,direction,service,input_vessel,output_vessel`
-(`weight` accepts `light/medium/heavy` or `1/2/3`; vessels by name).
+(`type` and `service` accept comma-separated values, e.g. `dry,reefer` or
+`seal,customs`; `weight` accepts
+`light/medium/heavy` or `1/2/3`; vessels by name).
 
 **A strategy** (`data/strategies/<name>.yaml`) — a rule-set:
 ```yaml

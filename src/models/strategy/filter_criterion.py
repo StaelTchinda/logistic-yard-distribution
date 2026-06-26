@@ -19,8 +19,8 @@ class FilterCriterion:
     values: tuple[str, ...]
 
     def matches(self, container: Container) -> bool:
-        actual = self.attribute.value_for(container).strip().lower()
-        return actual in self._normalized
+        actuals = self.attribute.values_for(container)
+        return bool(actuals & self._normalized)
 
     @property
     def _normalized(self) -> frozenset[str]:

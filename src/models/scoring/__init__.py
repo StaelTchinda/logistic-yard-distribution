@@ -1,7 +1,7 @@
 """Scoring: metrics, weights, access points, and result objects."""
 
 from .access import AccessPoints
-from .metrics import (
+from src.services.scoring.metrics import (
     manual_sort_effort,
     rehandles_count,
     score_placement,

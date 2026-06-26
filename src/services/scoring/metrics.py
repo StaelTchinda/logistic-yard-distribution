@@ -7,15 +7,14 @@ evaluated dataset: earlier in the list = retrieved earlier = should end up on to
 from __future__ import annotations
 
 from src.models.container import Container
+from src.models.scoring.access import AccessPoints
+from src.models.scoring.result import EvaluationResultScore
+from src.models.scoring.weights import DEFAULT_WEIGHTS, ScoreWeights
 from src.models.yard import Slot
-
-from .access import AccessPoints
-from .result import EvaluationResultScore
-from .weights import DEFAULT_WEIGHTS, ScoreWeights
 
 Placement = list[tuple[Container, Slot]]
 
-# TODO: Move this file to src/services/scoring/metrics.py
+
 def _stacks(placement: Placement) -> dict[tuple[int, int, int], list[Container]]:
     """Group a placement into vertical stacks, each ordered bottom -> top."""
     layered: dict[tuple[int, int, int], list[tuple[int, Container]]] = {}

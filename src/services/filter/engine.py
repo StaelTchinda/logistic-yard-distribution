@@ -10,19 +10,18 @@ from __future__ import annotations
 from typing import Iterator
 
 from src.models.container import Container
+from src.models.geometry import Coordinate3D
+from src.models.scoring.access import AccessPoints
+from src.models.scoring.result import EvaluationResult
+from src.models.scoring.weights import DEFAULT_WEIGHTS, ScoreWeights
 from src.models.strategy.enum import Axis, StackStart
 from src.models.strategy.filter_rule import FilterRule
 from src.models.strategy.strategy import Strategy
-from src.models.geometry import Coordinate3D
-from src.models.scoring.access import AccessPoints
-from src.models.scoring.metrics import score_placement
-from src.models.scoring.result import EvaluationResult
-from src.models.scoring.weights import DEFAULT_WEIGHTS, ScoreWeights
 from src.models.yard import Slot, Yard
+from src.services.scoring.metrics import score_placement
 
 Bounds = tuple[int, int, int, int, int, int]  # min_x, max_x, min_y, max_y, min_z, max_z
 
-# TODO: Move this file to src/services/filter/engine.py
 
 def _bounds(index: dict[Coordinate3D, Slot]) -> Bounds:
     xs = [c.x for c in index]

@@ -23,13 +23,11 @@ class ContainerSummary:
 def summarize_containers(containers: list[Container]) -> ContainerSummary:
     return ContainerSummary(
         total=len(containers),
-        by_type=dict(Counter(c.type.value for c in containers)),
+        by_type=dict(Counter(t.value for c in containers for t in c.type)),
         by_size=dict(Counter(c.size for c in containers)),
         by_status=dict(Counter(c.status.value for c in containers)),
         by_weight=dict(Counter(c.weight.name.lower() for c in containers)),
         by_direction=dict(Counter(c.direction.value for c in containers)),
-        by_service=dict(
-            Counter(c.service.value if c.service else "none" for c in containers)
-        ),
+        by_service=dict(Counter(s.value for c in containers for s in c.service)),
         by_outbound_group=dict(Counter(c.outbound_group() for c in containers)),
     )

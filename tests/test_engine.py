@@ -1,5 +1,4 @@
 from src.models import (
-    Container,
     Coordinate2D,
     Coordinate3D,
     Direction,
@@ -18,6 +17,7 @@ from src.models.strategy import (
     evaluate,
     find_best,
 )
+from tests.factories import make_container
 
 
 def _yard():
@@ -26,11 +26,19 @@ def _yard():
 
 def _containers():
     exports = [
-        Container(id=f"E{i}", outbound_mode=TransportMode.DEEP_SEA, direction=Direction.EXPORT)
+        make_container(
+            id=f"E{i}",
+            outbound_mode=TransportMode.DEEP_SEA,
+            direction=Direction.EXPORT,
+        )
         for i in range(3)
     ]
     imports = [
-        Container(id=f"I{i}", outbound_mode=TransportMode.TRUCK, direction=Direction.IMPORT)
+        make_container(
+            id=f"I{i}",
+            outbound_mode=TransportMode.TRUCK,
+            direction=Direction.IMPORT,
+        )
         for i in range(3)
     ]
     return exports, imports

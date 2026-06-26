@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import csv
+import warnings
 from pathlib import Path
 
 import yaml
 
-from src.models.container import Container, TransportVessel
+from src.models.container import Container
 from src.models.enums import (
     ContainerService,
     ContainerStatus,
@@ -80,50 +81,240 @@ def load_yard(path: str | Path) -> Yard:
 
 
 # ---------------------------------------------------------------- containers
-def _enum(enum_cls, value, default):
-    value = (value or "").strip().lower()
-    return enum_cls(value) if value else default
+def _cell(row: dict[str, str], key: str) -> str:
+    return (row.get(key) or "").strip()
 
 
-def _weight(value: str | None) -> ContainerWeight:
-    value = (value or "").strip()
-    if not value:
-        return ContainerWeight.MEDIUM
-    return ContainerWeight[value.upper()] if value.isalpha() else ContainerWeight(int(value))
+def _parse_required_enum(enum_cls, raw: str, field_name: str):
+    if not raw:
+        return None
+    try:
+        return enum_cls(raw.lower())
+    except ValueError:
+        warnings.warn(
+            f"Skipping row: invalid {field_name} {raw!r}",
+            stacklevel=3,
+        )
+        return None
+
+
+def _parse_optional_enum(enum_cls, raw: str, field_name: str):
+    if not raw:
+        return None
+    try:
+        return enum_cls(raw.lower())
+    except ValueError:
+        warnings.warn(
+            f"Skipping row: invalid {field_name} {raw!r}",
+            stacklevel=3,
+        )
+        return None
+
+
+def _parse_weight(raw: str) -> ContainerWeight | None:
+    if not raw:
+        return None
+    try:
+        return ContainerWeight[raw.upper()] if raw.isalpha() else ContainerWeight(int(raw))
+    except (KeyError, ValueError):
+        warnings.warn(f"Skipping row: invalid weight {raw!r}", stacklevel=3)
+        return None
+
+
+def _parse_types(raw: str) -> list[ContainerType] | None:
+    if not raw:
+        return None
+    types: list[ContainerType] = []
+    seen: set[ContainerType] = set()
+    for token in raw.split(","):
+        token = token.strip()
+        if not token:
+            continue
+        try:
+            parsed = ContainerType(token.lower())
+        except ValueError:
+            warnings.warn(
+                f"Skipping row: invalid type {token!r}",
+                stacklevel=3,
+            )
+            return None
+        if parsed not in seen:
+            seen.add(parsed)
+            types.append(parsed)
+    if not types:
+        return None
+    return types
+
+
+def _parse_services(raw: str) -> list[ContainerService] | None:
+    if not raw:
+        return []
+    services: list[ContainerService] = []
+    seen: set[ContainerService] = set()
+    for token in raw.split(","):
+        token = token.strip()
+        if not token:
+            continue
+        try:
+            parsed = ContainerService(token.lower())
+        except ValueError:
+            warnings.warn(
+                f"Skipping row: invalid service {token!r}",
+                stacklevel=3,
+            )
+            return None
+        if parsed not in seen:
+            seen.add(parsed)
+            services.append(parsed)
+    return services
+
+
+def _parse_size(raw: str) -> int | None:
+    if not raw:
+        return None
+    try:
+        return int(raw)
+    except ValueError:
+        warnings.warn(f"Skipping row: invalid size {raw!r}", stacklevel=3)
+        return None
+
+
+def _parse_transport(prefix: str, row: dict[str, str]) -> tuple[str, str, str, str] | None:
+    """Parse inbound/outbound transport columns (CSV still uses ``{prefix}_vessel*`` headers)."""
+    name = _cell(row, f"{prefix}_vessel")
+    carrier = _cell(row, f"{prefix}_vessel_carrier")
+    liner = _cell(row, f"{prefix}_vessel_liner")
+    line = _cell(row, f"{prefix}_vessel_service")
+    if not any((name, carrier, liner, line)):
+        return None
+    if not name:
+        warnings.warn(
+            f"Skipping row {_cell(row, 'id')!r}: {prefix}_vessel name required "
+            f"when other {prefix}_vessel_* columns are set",
+            stacklevel=3,
+        )
+        return None
+    return name, carrier, liner, line
+
+
+def _parse_container_row(row: dict[str, str]) -> Container | None:
+    row_id = _cell(row, "id")
+    if not row_id:
+        warnings.warn("Skipping row: missing id", stacklevel=3)
+        return None
+
+    size = _parse_size(_cell(row, "size"))
+    if size is None:
+        warnings.warn(f"Skipping row {row_id!r}: missing or invalid size", stacklevel=3)
+        return None
+
+    types = _parse_types(_cell(row, "type"))
+    if types is None:
+        if _cell(row, "type"):
+            return None
+        warnings.warn(f"Skipping row {row_id!r}: missing type", stacklevel=3)
+        return None
+
+    status = _parse_required_enum(ContainerStatus, _cell(row, "status"), "status")
+    if status is None:
+        if _cell(row, "status"):
+            return None
+        warnings.warn(f"Skipping row {row_id!r}: missing status", stacklevel=3)
+        return None
+
+    weight = _parse_weight(_cell(row, "weight"))
+    if weight is None:
+        warnings.warn(f"Skipping row {row_id!r}: missing or invalid weight", stacklevel=3)
+        return None
+
+    inbound_mode = _parse_required_enum(
+        TransportMode, _cell(row, "inbound_mode"), "inbound_mode"
+    )
+    if inbound_mode is None:
+        if _cell(row, "inbound_mode"):
+            return None
+        warnings.warn(f"Skipping row {row_id!r}: missing inbound_mode", stacklevel=3)
+        return None
+
+    outbound_mode = _parse_required_enum(
+        TransportMode, _cell(row, "outbound_mode"), "outbound_mode"
+    )
+    if outbound_mode is None:
+        if _cell(row, "outbound_mode"):
+            return None
+        warnings.warn(f"Skipping row {row_id!r}: missing outbound_mode", stacklevel=3)
+        return None
+
+    direction = _parse_required_enum(Direction, _cell(row, "direction"), "direction")
+    if direction is None:
+        if _cell(row, "direction"):
+            return None
+        warnings.warn(f"Skipping row {row_id!r}: missing direction", stacklevel=3)
+        return None
+
+    services = _parse_services(_cell(row, "service"))
+    if services is None:
+        return None
+
+    input_transport = _parse_transport("input", row)
+    if input_transport is None and any(
+        _cell(row, k)
+        for k in (
+            "input_vessel",
+            "input_vessel_carrier",
+            "input_vessel_liner",
+            "input_vessel_service",
+        )
+    ):
+        return None
+
+    output_transport = _parse_transport("output", row)
+    if output_transport is None and any(
+        _cell(row, k)
+        for k in (
+            "output_vessel",
+            "output_vessel_carrier",
+            "output_vessel_liner",
+            "output_vessel_service",
+        )
+    ):
+        return None
+
+    input_name, input_carrier, input_liner, input_line = input_transport or ("", "", "", "")
+    output_name, output_carrier, output_liner, output_line = output_transport or (
+        "",
+        "",
+        "",
+        "",
+    )
+
+    return Container(
+        id=row_id,
+        size=size,
+        type=types,
+        status=status,
+        weight=weight,
+        inbound_mode=inbound_mode,
+        outbound_mode=outbound_mode,
+        direction=direction,
+        service=services,
+        input_name=input_name,
+        input_carrier=input_carrier,
+        input_liner=input_liner,
+        output_name=output_name,
+        output_carrier=output_carrier,
+        output_liner=output_liner,
+    )
 
 
 def load_containers(path: str | Path) -> list[Container]:
-    """Parse a container CSV into Container objects (vessels are shared by name)."""
-    vessels: dict[str, TransportVessel] = {}
-
-    def vessel(name: str | None) -> TransportVessel | None:
-        name = (name or "").strip()
-        if not name:
-            return None
-        return vessels.setdefault(name, TransportVessel(name))
-
+    """Parse a container CSV into Container objects."""
     containers: list[Container] = []
     with open(path, newline="") as handle:
         for row in csv.DictReader(handle):
-            containers.append(
-                Container(
-                    id=row["id"].strip(),
-                    size=int((row.get("size") or "20").strip()),
-                    type=_enum(ContainerType, row.get("type"), ContainerType.DRY),
-                    status=_enum(ContainerStatus, row.get("status"), ContainerStatus.FULL),
-                    weight=_weight(row.get("weight")),
-                    inbound_mode=_enum(
-                        TransportMode, row.get("inbound_mode"), TransportMode.DEEP_SEA
-                    ),
-                    outbound_mode=_enum(
-                        TransportMode, row.get("outbound_mode"), TransportMode.TRUCK
-                    ),
-                    direction=_enum(Direction, row.get("direction"), Direction.IMPORT),
-                    service=_enum(ContainerService, row.get("service"), None),
-                    input_vessel=vessel(row.get("input_vessel")),
-                    output_vessel=vessel(row.get("output_vessel")),
-                )
-            )
+            container = _parse_container_row(row)
+            if container is not None:
+                containers.append(container)
     return containers
 
 

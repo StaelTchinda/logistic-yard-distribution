@@ -8,8 +8,11 @@ from src.models.container import Container
 
 
 class ContainerFilterableAttribute(Enum):
-    """The container fields a ``FilterCriterion`` may key on. Each value is the matching
-    attribute name on :class:`~src.models.container.Container`."""
+    """The container fields a ``FilterCriterion`` may key on.
+
+    Each value is the matching attribute name on :class:`~src.models.container.Container`.
+    ``input_*`` / ``output_*`` fields describe the inbound / outbound transport.
+    """
 
     SIZE = "size"
     TYPE = "type"
@@ -19,25 +22,37 @@ class ContainerFilterableAttribute(Enum):
     OUTBOUND_MODE = "outbound_mode"
     DIRECTION = "direction"
     SERVICE = "service"
-    INPUT_VESSEL = "input_vessel"
-    OUTPUT_VESSEL = "output_vessel"
+    INPUT_NAME = "input_name"
+    INPUT_CARRIER = "input_carrier"
+    INPUT_LINER = "input_liner"
+    OUTPUT_NAME = "output_name"
+    OUTPUT_CARRIER = "output_carrier"
+    OUTPUT_LINER = "output_liner"
 
     def value_for(self, container: Container) -> str:
         """The container's value for this attribute as a comparable string
         (empty string when the field is ``None``)."""
-        raw = getattr(container, self.value)
-        if raw is None:
+        values = self.values_for(container)
+        if not values:
             return ""
+        return next(iter(values))
+
+    def values_for(self, container: Container) -> frozenset[str]:
+        """Normalized comparable values for this attribute (lowercase strings)."""
+        raw = getattr(container, self.value)
+        if self is ContainerFilterableAttribute.TYPE:
+            return frozenset(t.value for t in raw)
+        if self is ContainerFilterableAttribute.SERVICE:
+            return frozenset(s.value for s in raw)
+        if raw is None:
+            return frozenset()
         if self is ContainerFilterableAttribute.SIZE:
-            return str(raw)  # int -> "20" / "40"
+            return frozenset({str(raw)})
         if self is ContainerFilterableAttribute.WEIGHT:
-            return raw.name.lower()  # IntEnum -> "light" / "medium" / "heavy"
-        if self in (
-            ContainerFilterableAttribute.INPUT_VESSEL,
-            ContainerFilterableAttribute.OUTPUT_VESSEL,
-        ):
-            return raw.name  # TransportVessel -> its name
-        return raw.value  # string-valued enums (type/status/mode/direction/service)
+            return frozenset({raw.name.lower()})
+        if isinstance(raw, str):
+            return frozenset({raw.strip().lower()})
+        return frozenset({raw.value})
 
 
 class Axis(Enum):

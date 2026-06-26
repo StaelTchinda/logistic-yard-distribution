@@ -1,6 +1,6 @@
 """Filter criteria, placement rules, strategies, and the placement engine."""
 
-from src.models.strategy.engine import (
+from src.services.filter.engine import (
     evaluate,
     evaluate_all,
     find_best,

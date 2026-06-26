@@ -1,19 +1,20 @@
-from src.models import Container, Coordinate2D, YardBlock
+from src.models import Coordinate2D, YardBlock
 from src.models.scoring import (
     W_DISTANCE,
     W_REHANDLE,
     W_SORT,
     EvaluationResultScore,
     ScoreWeights,
+    rehandles_count,
 )
-from src.models.scoring.metrics import rehandles_count
 from src.models.yard import Slot
+from tests.factories import make_container
 
 
 def test_rehandles_counts_buried_early_retrieved():
     block = YardBlock(1, 1, 3, Coordinate2D(0, 0))
-    early = Container(id="early")
-    late = Container(id="late")
+    early = make_container(id="early")
+    late = make_container(id="late")
     order = [early, late]  # 'early' is retrieved first
 
     buried = [(early, Slot(block, 0, 0, 0)), (late, Slot(block, 0, 0, 1))]

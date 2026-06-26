@@ -13,6 +13,7 @@ class ContainerType(Enum):
     DRY = "dry"
     REEFER = "reefer"
     HAZARDOUS = "hazardous"
+    TANK = "tank"
 
 
 class ContainerStatus(Enum):

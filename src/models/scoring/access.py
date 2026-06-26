@@ -8,7 +8,6 @@ from src.models.enums import TransportMode
 from src.models.geometry import Coordinate3D
 from src.models.yard import Yard
 
-# TODO: Decide if we need this class or not. If not, remove it.
 @dataclass
 class AccessPoints:
     quay: Coordinate3D  # seaside: deep sea / feeder
