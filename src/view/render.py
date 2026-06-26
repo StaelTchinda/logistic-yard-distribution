@@ -261,7 +261,6 @@ def render_summary(summary: ContainerSummary):
     table.add_row("output name", fmt(summary.by_output_name))
     table.add_row("output carrier", fmt(summary.by_output_carrier))
     table.add_row("output liner", fmt(summary.by_output_liner))
-    table.add_row("outbound group", fmt(summary.by_outbound_group))
     return table
 
 

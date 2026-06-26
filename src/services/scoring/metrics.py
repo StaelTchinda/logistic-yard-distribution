@@ -53,11 +53,11 @@ def transport_distance(placement: Placement, access: AccessPoints) -> float:
 
 
 def manual_sort_effort(placement: Placement) -> int:
-    """Count load-group changes scanning each stack bottom -> top."""
+    """Count outbound-mode changes scanning each stack bottom -> top."""
     total = 0
     for containers in _stacks(placement).values():
-        groups = [c.outbound_group() for c in containers]
-        total += sum(1 for a, b in zip(groups, groups[1:]) if a != b)
+        modes = [c.outbound_mode.value for c in containers]
+        total += sum(1 for a, b in zip(modes, modes[1:]) if a != b)
     return total
 
 

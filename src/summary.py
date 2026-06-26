@@ -31,7 +31,6 @@ class ContainerSummary:
     by_output_name: dict[str, int]
     by_output_carrier: dict[str, int]
     by_output_liner: dict[str, int]
-    by_outbound_group: dict[str, int]
 
 
 def summarize_containers(containers: list[Container]) -> ContainerSummary:
@@ -51,5 +50,4 @@ def summarize_containers(containers: list[Container]) -> ContainerSummary:
         by_output_name=_count_text([c.output_name for c in containers]),
         by_output_carrier=_count_text([c.output_carrier for c in containers]),
         by_output_liner=_count_text([c.output_liner for c in containers]),
-        by_outbound_group=dict(Counter(c.outbound_group() for c in containers)),
     )

@@ -37,11 +37,5 @@ class Container:
     output_carrier: str = ""
     output_liner: str = ""
 
-    def outbound_group(self) -> str:
-        """The load group this container leaves with: its outbound transport, else its mode."""
-        if self.output_name:
-            return f"transport:{self.output_name}"
-        return f"mode:{self.outbound_mode.value}"
-
     def __str__(self) -> str:
         return f"Container({self.id})"

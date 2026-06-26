@@ -20,7 +20,7 @@ scored on three metrics, all **minimized**:
 | --- | --- |
 | `rehandles` | reshuffles to dig out an earlier-retrieved box buried under a later one (retrieval order = dataset order) |
 | `transport_distance` | Manhattan distance from each slot to its outbound access point (quay / rail / gate) |
-| `manual_sort_effort` | load-group mixing within stacks |
+| `manual_sort_effort` | outbound-mode mixing within stacks |
 
 `get_score()` is a weighted sum (weights in
 [`src/models/scoring/weights.py`](src/models/scoring/weights.py)); lower is better. The
