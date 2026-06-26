@@ -2,6 +2,7 @@
 
 from src.view.render import (
     animate_fill,
+    render_ranking,
     render_report,
     render_score,
     render_strategy,
@@ -16,4 +17,5 @@ __all__ = [
     "render_strategy",
     "render_score",
     "render_report",
+    "render_ranking",
 ]

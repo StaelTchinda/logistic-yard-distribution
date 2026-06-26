@@ -17,6 +17,7 @@ from src.models.strategy.enum import RuleOption
 from src.models.strategy.strategy import Strategy
 from src.models.strategy.utils import Region, Stacking
 from src.models.yard import Yard
+from src.services.scoring.ranking import StrategyRanking
 from src.summary import ContainerSummary
 
 _BG_BLUE = "#6f93c4"  # the yard ground / driving lanes
@@ -353,5 +354,33 @@ def render_report(results: list[tuple[object, EvaluationResult]]):
             name, str(sc.rehandles_count), f"{sc.transport_distance:.0f}",
             str(sc.manual_sort_effort), str(sc.unplaced_count),
             f"{sc.balanced_distribution:.2f}", str(total),
+        )
+    return table
+
+
+def _metric_cell(value: float, rank: int, *, decimals: int = 0) -> str:
+    if decimals:
+        formatted = f"{value:.{decimals}f}"
+    else:
+        formatted = f"{value:.0f}" if float(value).is_integer() else f"{value:.2f}"
+    return f"{formatted} ({rank})"
+
+
+def render_ranking(rankings: list[StrategyRanking]):
+    table = Table(title="Datensonar-style ranking (lower total rank = better)")
+    table.add_column("total", justify="right")
+    table.add_column("strategy")
+    for col in ("rehandles", "distance", "yard distribution", "punishment", "Σrank"):
+        table.add_column(col, justify="right")
+    for row in rankings:
+        name = f"{row.strategy.name} ★" if row.total_rank == 1 else row.strategy.name
+        table.add_row(
+            str(row.total_rank),
+            name,
+            _metric_cell(row.rehandles_value, row.rehandles_rank),
+            _metric_cell(row.distance_value, row.distance_rank, decimals=0),
+            _metric_cell(row.yard_distribution_value, row.yard_distribution_rank, decimals=2),
+            _metric_cell(row.punishment_value, row.punishment_rank),
+            str(row.rank_sum),
         )
     return table

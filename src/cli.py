@@ -24,9 +24,11 @@ from src.loaders.catalog import (
 )
 from src.loaders.paths import data_root
 from src.models.strategy import evaluate, evaluate_all
+from src.services.scoring.ranking import rank_strategies
 from src.summary import summarize_containers
 from src.view import (
     animate_fill,
+    render_ranking,
     render_report,
     render_score,
     render_strategy,
@@ -109,6 +111,7 @@ def cmd_compare(root, yard_key, dataset_key) -> int:
     containers = load_containers(de.path)
     results = evaluate_all(yard, containers, [load_strategy(s.path) for s in strategies])
     console.print(render_report(results))
+    console.print(render_ranking(rank_strategies(results)))
     return 0
 
 
@@ -185,6 +188,7 @@ def run_interactive(root) -> int:
                 yard, containers, [load_strategy(s.path) for s in strategies]
             )
             console.print(render_report(results))
+            console.print(render_ranking(rank_strategies(results)))
             if not questionary.confirm("Run another strategy?", default=False).ask():
                 return 0
         elif action != "Run another strategy":
