@@ -1,10 +1,12 @@
 from src.models import Coordinate2D, YardBlock
 from src.models.scoring import (
+    W_BALANCE,
     W_DISTANCE,
     W_REHANDLE,
     W_SORT,
     EvaluationResultScore,
     ScoreWeights,
+    balanced_distribution,
     rehandles_count,
 )
 from src.models.yard import Slot
@@ -34,6 +36,40 @@ def test_get_score_default_weighted_sum():
 
 
 def test_get_score_with_custom_weights():
-    weights = ScoreWeights(rehandle=1, distance=0, sort=0, unplaced=0)
+    weights = ScoreWeights(rehandle=1, distance=0, sort=0, unplaced=0, balance=0)
     score = EvaluationResultScore(rehandles_count=3, transport_distance=99, weights=weights)
     assert score.get_score() == 3
+
+
+def test_get_score_includes_balanced_distribution():
+    score = EvaluationResultScore(balanced_distribution=0.5)
+    assert score.get_score() == round(W_BALANCE * 0.5)
+
+
+def test_balanced_distribution():
+    block_a = YardBlock(2, 2, 1, Coordinate2D(0, 0), "A")
+    block_b = YardBlock(2, 2, 1, Coordinate2D(10, 0), "B")
+    blocks = [block_a, block_b]
+    capacity = block_a.get_stock_capacity()  # 4 per block
+
+    # Single block yard -> no imbalance metric
+    single_block = [block_a]
+    concentrated = [
+        (make_container(id=f"c{i}"), Slot(block_a, i % 2, i // 2, 0))
+        for i in range(capacity)
+    ]
+    assert balanced_distribution(concentrated, single_block) == 0.0
+
+    # All containers in block A, block B empty -> high imbalance
+    assert balanced_distribution(concentrated, blocks) > 0.0
+
+    # Split evenly across both blocks -> perfectly balanced
+    spread = [
+        (make_container(id=f"a{i}"), Slot(block_a, i % 2, i // 2, 0))
+        for i in range(capacity // 2)
+    ] + [
+        (make_container(id=f"b{i}"), Slot(block_b, i % 2, i // 2, 0))
+        for i in range(capacity // 2)
+    ]
+    assert balanced_distribution(spread, blocks) == 0.0
+    assert balanced_distribution(spread, blocks) < balanced_distribution(concentrated, blocks)

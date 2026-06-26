@@ -9,6 +9,7 @@ W_REHANDLE = 10.0
 W_DISTANCE = 1.0
 W_SORT = 5.0
 W_UNPLACED = 1000.0  # a container that cannot be placed is heavily penalized
+W_BALANCE = 1.0
 
 
 @dataclass(frozen=True)
@@ -17,6 +18,7 @@ class ScoreWeights:
     distance: float = W_DISTANCE
     sort: float = W_SORT
     unplaced: float = W_UNPLACED
+    balance: float = W_BALANCE
 
 
 DEFAULT_WEIGHTS = ScoreWeights()

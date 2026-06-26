@@ -10,7 +10,7 @@ from src.models.container import Container
 from src.models.scoring.access import AccessPoints
 from src.models.scoring.result import EvaluationResultScore
 from src.models.scoring.weights import DEFAULT_WEIGHTS, ScoreWeights
-from src.models.yard import Slot
+from src.models.yard import Slot, YardBlock
 
 Placement = list[tuple[Container, Slot]]
 
@@ -61,17 +61,35 @@ def manual_sort_effort(placement: Placement) -> int:
     return total
 
 
+def balanced_distribution(placement: Placement, blocks: list[YardBlock]) -> float:
+    """Population std-dev of per-block fill ratios; 0.0 == perfectly balanced."""
+    if len(blocks) < 2:
+        return 0.0
+    counts: dict[int, int] = {}
+    for _, slot in placement:
+        counts[id(slot.block)] = counts.get(id(slot.block), 0) + 1
+    ratios = [
+        counts.get(id(b), 0) / cap
+        for b in blocks
+        if (cap := b.get_stock_capacity()) > 0
+    ]
+    mean = sum(ratios) / len(ratios)
+    return (sum((r - mean) ** 2 for r in ratios) / len(ratios)) ** 0.5
+
+
 def score_placement(
     placement: Placement,
     access: AccessPoints,
     unplaced_count: int = 0,
     weights: ScoreWeights = DEFAULT_WEIGHTS,
     order: list[Container] | None = None,
+    blocks: list[YardBlock] | None = None,
 ) -> EvaluationResultScore:
     return EvaluationResultScore(
         rehandles_count=rehandles_count(placement, order),
         transport_distance=transport_distance(placement, access),
         manual_sort_effort=manual_sort_effort(placement),
         unplaced_count=unplaced_count,
+        balanced_distribution=balanced_distribution(placement, blocks or []),
         weights=weights,
     )

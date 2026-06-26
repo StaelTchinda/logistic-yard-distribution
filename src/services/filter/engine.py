@@ -110,7 +110,9 @@ def evaluate(
     unplaced: list[Container] = []
 
     if not index:
-        score = score_placement([], access, len(containers), weights, order=containers)
+        score = score_placement(
+            [], access, len(containers), weights, order=containers, blocks=yard.blocks
+        )
         return EvaluationResult(yard, [], [], score, list(containers))
 
     bounds = _bounds(index)
@@ -142,7 +144,9 @@ def evaluate(
             placed.append(container)
             coords.append(slot.global_coord)
 
-    score = score_placement(placement, access, len(unplaced), weights, order=containers)
+    score = score_placement(
+        placement, access, len(unplaced), weights, order=containers, blocks=yard.blocks
+    )
     return EvaluationResult(yard, placed, coords, score, unplaced)
 
 
@@ -176,7 +180,7 @@ def report(results: list[tuple[Strategy, EvaluationResult]]) -> str:
     """Plain-text comparison table (a rich version lives in view/)."""
     header = (
         f"{'Strategy':<22}{'rehandles':>10}{'distance':>10}"
-        f"{'sort':>6}{'unplaced':>9}{'TOTAL':>9}"
+        f"{'sort':>6}{'unplaced':>9}{'balance':>9}{'TOTAL':>9}"
     )
     lines = [header, "-" * len(header)]
     best = min((r.score.get_score() for _, r in results), default=None)
@@ -187,6 +191,6 @@ def report(results: list[tuple[Strategy, EvaluationResult]]) -> str:
         lines.append(
             f"{strategy.name:<22}{sc.rehandles_count:>10}"
             f"{sc.transport_distance:>10.0f}{sc.manual_sort_effort:>6}"
-            f"{sc.unplaced_count:>9}{total:>9}{mark}"
+            f"{sc.unplaced_count:>9}{sc.balanced_distribution:>9.2f}{total:>9}{mark}"
         )
     return "\n".join(lines)

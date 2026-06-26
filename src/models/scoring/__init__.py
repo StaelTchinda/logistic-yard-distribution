@@ -2,6 +2,7 @@
 
 from .access import AccessPoints
 from src.services.scoring.metrics import (
+    balanced_distribution,
     manual_sort_effort,
     rehandles_count,
     score_placement,
@@ -10,6 +11,7 @@ from src.services.scoring.metrics import (
 from .result import EvaluationResult, EvaluationResultScore
 from .weights import (
     DEFAULT_WEIGHTS,
+    W_BALANCE,
     W_DISTANCE,
     W_REHANDLE,
     W_SORT,
@@ -27,8 +29,10 @@ __all__ = [
     "W_DISTANCE",
     "W_SORT",
     "W_UNPLACED",
+    "W_BALANCE",
     "rehandles_count",
     "transport_distance",
     "manual_sort_effort",
+    "balanced_distribution",
     "score_placement",
 ]

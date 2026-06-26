@@ -17,6 +17,7 @@ class EvaluationResultScore:
     transport_distance: float = 0.0
     manual_sort_effort: int = 0
     unplaced_count: int = 0
+    balanced_distribution: float = 0.0
     weights: ScoreWeights = field(default=DEFAULT_WEIGHTS)  # frozen -> safe shared default
 
     def get_score(self) -> int:
@@ -26,6 +27,7 @@ class EvaluationResultScore:
             + w.distance * self.transport_distance
             + w.sort * self.manual_sort_effort
             + w.unplaced * self.unplaced_count
+            + w.balance * self.balanced_distribution
         )
         return round(total)
 
