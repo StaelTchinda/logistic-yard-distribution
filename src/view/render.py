@@ -253,6 +253,14 @@ def render_summary(summary: ContainerSummary):
     table.add_row("weight", fmt(summary.by_weight))
     table.add_row("direction", fmt(summary.by_direction))
     table.add_row("service", fmt(summary.by_service))
+    table.add_row("inbound mode", fmt(summary.by_inbound_mode))
+    table.add_row("input name", fmt(summary.by_input_name))
+    table.add_row("input carrier", fmt(summary.by_input_carrier))
+    table.add_row("input liner", fmt(summary.by_input_liner))
+    table.add_row("outbound mode", fmt(summary.by_outbound_mode))
+    table.add_row("output name", fmt(summary.by_output_name))
+    table.add_row("output carrier", fmt(summary.by_output_carrier))
+    table.add_row("output liner", fmt(summary.by_output_liner))
     table.add_row("outbound group", fmt(summary.by_outbound_group))
     return table
 
@@ -265,6 +273,7 @@ def render_score(score: EvaluationResultScore, *, title: str = "Score"):
     table.add_row("transport distance", f"{score.transport_distance:.0f}")
     table.add_row("manual sort effort", str(score.manual_sort_effort))
     table.add_row("unplaced", str(score.unplaced_count))
+    table.add_row("balanced distribution", f"{score.balanced_distribution:.2f}")
     table.add_row("[bold]TOTAL (lower = better)[/bold]", f"[bold]{score.get_score()}[/bold]")
     return table
 
@@ -272,7 +281,7 @@ def render_score(score: EvaluationResultScore, *, title: str = "Score"):
 def render_report(results: list[tuple[object, EvaluationResult]]):
     table = Table(title="Strategy comparison (lower score = better)")
     table.add_column("strategy")
-    for col in ("rehandles", "distance", "sort", "unplaced", "TOTAL"):
+    for col in ("rehandles", "distance", "sort", "unplaced", "balance", "TOTAL"):
         table.add_column(col, justify="right")
     best = min((r.score.get_score() for _, r in results), default=None)
     for strategy, result in results:
@@ -281,6 +290,7 @@ def render_report(results: list[tuple[object, EvaluationResult]]):
         name = f"{strategy.name} ★" if total == best else strategy.name
         table.add_row(
             name, str(sc.rehandles_count), f"{sc.transport_distance:.0f}",
-            str(sc.manual_sort_effort), str(sc.unplaced_count), str(total),
+            str(sc.manual_sort_effort), str(sc.unplaced_count),
+            f"{sc.balanced_distribution:.2f}", str(total),
         )
     return table
