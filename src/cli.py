@@ -29,6 +29,7 @@ from src.view import (
     animate_fill,
     render_report,
     render_score,
+    render_strategy,
     render_summary,
     render_yard,
 )
@@ -80,6 +81,8 @@ def cmd_run(root, yard_key, dataset_key, strategy_key, view: bool, animate: bool
         f"[bold]{strategy.name}[/bold] on [bold]{ye.label}[/bold] "
         f"with [bold]{de.key}[/bold] ({len(containers)} containers)"
     )
+    if view:
+        console.print(render_strategy(strategy))
     if view and not animate:
         console.print(render_yard(yard, None, title="START (empty)"))
     result = evaluate(strategy, yard, containers)
@@ -161,6 +164,8 @@ def run_interactive(root) -> int:
         if strategy_entry is None:
             return 0
         strategy = load_strategy(strategy_entry.path)
+        if questionary.confirm("View the strategy's rules?", default=True).ask():
+            console.print(render_strategy(strategy))
         result = evaluate(strategy, yard, containers)
         if questionary.confirm("Animate the yard filling up?", default=True).ask():
             animate_fill(yard, result, title=f"Filling — {strategy.name}", console=console)

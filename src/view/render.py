@@ -13,6 +13,9 @@ from rich.table import Table
 from rich.text import Text
 
 from src.models.scoring.result import EvaluationResult, EvaluationResultScore
+from src.models.strategy.enum import RuleOption
+from src.models.strategy.strategy import Strategy
+from src.models.strategy.utils import Region, Stacking
 from src.models.yard import Yard
 from src.summary import ContainerSummary
 
@@ -237,6 +240,65 @@ def animate_fill(
             if delay and n != total:
                 time.sleep(delay)
     return result
+
+
+def _fmt_bound(lo: int | None, hi: int | None) -> str:
+    if lo is None and hi is None:
+        return ""
+    if lo is not None and hi is not None:
+        return str(lo) if lo == hi else f"{lo}–{hi}"
+    if lo is not None:
+        return f"≥{lo}"
+    return f"≤{hi}"
+
+
+def _fmt_region(region: Region) -> str:
+    parts: list[str] = []
+    for axis, bounds in (("x", region.x), ("y", region.y), ("z", region.z)):
+        label = _fmt_bound(*bounds)
+        if label:
+            parts.append(f"{axis}[{label}]")
+    return " ".join(parts) if parts else "(full yard)"
+
+
+def _fmt_stacking(stacking: Stacking) -> str:
+    order = "→".join(axis.value for axis in stacking.order)
+    return f"{stacking.start.value} · {order}"
+
+
+def render_strategy(strategy: Strategy):
+    """Compact overview of a strategy's ordered placement rules."""
+    table = Table(show_header=True, header_style="bold")
+    table.add_column("#", justify="right", style="cyan")
+    table.add_column("conditions")
+    table.add_column("region")
+    table.add_column("stacking")
+    table.add_column("skip", justify="center")
+    table.add_column("options")
+    table.add_column("description", style="dim")
+
+    for rule in strategy.sorted_rules():
+        if rule.conditions:
+            conditions = " AND ".join(str(cond) for cond in rule.conditions)
+        else:
+            conditions = "(catch-all)"
+        if rule.skip.x or rule.skip.y:
+            skip = f"{rule.skip.x}/{rule.skip.y}"
+        else:
+            skip = "-"
+        options = "weight" if RuleOption.WEIGHT_RELEVANT in rule.options else "-"
+        table.add_row(
+            str(rule.sort_order),
+            conditions,
+            _fmt_region(rule.region),
+            _fmt_stacking(rule.stacking),
+            skip,
+            options,
+            rule.description or "-",
+        )
+
+    subtitle = strategy.description or None
+    return Panel(table, title=strategy.name, subtitle=subtitle, border_style="#2b3a55")
 
 
 def render_summary(summary: ContainerSummary):
