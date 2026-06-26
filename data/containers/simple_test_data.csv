@@ -1,0 +1,16 @@
+id,size,type,status,weight,inbound_mode,outbound_mode,direction,service,input_vessel,output_vessel
+MNGH2851746,20,reefer,full,heavy,rail,deep_sea,export,stuff,,Jim Wonder
+LUXW9554876,40,dry,full,light,deep_sea,deep_sea,waterside_transshipment,,,
+WRUE4412898,40,dry,full,light,truck,deep_sea,export,customs,,Jim Wonder
+XFYB4373945,20,dry,full,light,rail,deep_sea,export,customs,,Jim Wonder
+GTRD3426448,40,dry,full,light,truck,deep_sea,export,,,Jim Wonder
+TGCX7417443,40,hazardous,full,light,deep_sea,truck,import,seal,Jim Wonder,
+TJSX9733668,40,reefer,full,medium,deep_sea,deep_sea,waterside_transshipment,customs,,Jim Wonder
+RUMY3483164,40,dry,full,medium,deep_sea,feeder,waterside_transshipment,washing,,Jim Wonder
+SCCU1466584,40,dry,full,light,deep_sea,truck,import,,Jim Wonder,
+VBPQ9182813,40,dry,full,heavy,deep_sea,rail,import,customs,Jim Wonder,
+SYUG9591736,40,dry,full,medium,deep_sea,feeder,waterside_transshipment,,,Jim Wonder
+VUPT4198615,20,dry,empty,heavy,deep_sea,feeder,waterside_transshipment,,,Jim Wonder
+DCLD1955959,40,tank,empty,light,deep_sea,feeder,waterside_transshipment,strip,,Jim Wonder
+RHDD5811944,40,hazardous,full,light,deep_sea,rail,import,washing,Jim Wonder,
+YDUD6686768,40,reefer,full,light,deep_sea,deep_sea,waterside_transshipment,,,Jim Wonder

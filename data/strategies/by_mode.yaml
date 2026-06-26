@@ -1,0 +1,26 @@
+name: "By outbound mode"
+description: "Route each container to blocks near its outbound access point (sea->quay, rail->rail head, truck->gate) and spread on the ground. Regions are tuned to the datensonar layout (x 20-230, y 20-110)."
+rules:
+  - description: "Sea (deep_sea/feeder) near the quay — low x, low y"
+    sort_order: 10
+    conditions:
+      - {attribute: outbound_mode, values: [deep_sea, feeder]}
+    region: {x: [20, 170], y: [20, 70], z: [0, 4]}
+    stacking: {start: bottom_left, order: [z, x, y]}
+  - description: "Rail near the rail head — low x, high y"
+    sort_order: 20
+    conditions:
+      - {attribute: outbound_mode, values: [rail]}
+    region: {x: [20, 230], y: [100, 110], z: [0, 4]}
+    stacking: {start: top_left, order: [z, x, y]}
+  - description: "Truck near the gate — high x"
+    sort_order: 30
+    conditions:
+      - {attribute: outbound_mode, values: [truck]}
+    region: {x: [180, 230], y: [20, 70], z: [0, 4]}
+    stacking: {start: top_right, order: [z, x, y]}
+  - description: "Catch-all (anything else), spread on the ground"
+    sort_order: 9999
+    conditions: []
+    region: {x: [null, null], y: [null, null], z: [null, null]}
+    stacking: {start: bottom_left, order: [z, x, y]}

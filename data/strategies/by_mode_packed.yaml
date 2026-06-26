@@ -1,0 +1,30 @@
+name: "By outbound mode (packed)"
+description: "Route each container to blocks near its outbound access point (sea->quay, rail->rail head, truck->gate) and pack it tight (stack z-innermost) so transport distance is low; heavy containers on lower tiers. Best score on the datensonar yard. Regions are tuned to that layout (x 20-230, y 20-110)."
+rules:
+  - description: "Sea (deep_sea/feeder) packed at the quay — low x, low y"
+    sort_order: 10
+    conditions:
+      - {attribute: outbound_mode, values: [deep_sea, feeder]}
+    region: {x: [20, 170], y: [20, 70], z: [0, 4]}
+    stacking: {start: bottom_left, order: [x, y, z]}
+    options: [weight_relevant]
+  - description: "Rail packed at the rail head — low x, high y"
+    sort_order: 20
+    conditions:
+      - {attribute: outbound_mode, values: [rail]}
+    region: {x: [20, 230], y: [100, 110], z: [0, 4]}
+    stacking: {start: top_left, order: [x, y, z]}
+    options: [weight_relevant]
+  - description: "Truck packed at the gate — high x, high y"
+    sort_order: 30
+    conditions:
+      - {attribute: outbound_mode, values: [truck]}
+    region: {x: [180, 230], y: [20, 70], z: [0, 4]}
+    stacking: {start: top_right, order: [x, y, z]}
+    options: [weight_relevant]
+  - description: "Catch-all (anything else / overflow)"
+    sort_order: 9999
+    conditions: []
+    region: {x: [null, null], y: [null, null], z: [null, null]}
+    stacking: {start: bottom_left, order: [x, y, z]}
+    options: [weight_relevant]
