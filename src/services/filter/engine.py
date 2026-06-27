@@ -93,6 +93,40 @@ def _order_members(members: list[Container], rule: FilterRule) -> list[Container
     return sorted(members, key=lambda c: int(c.weight), reverse=True)
 
 
+def _rule_group_key(rule: FilterRule) -> tuple:
+    return rule.conditions
+
+
+def _condition_chains(rules: list[FilterRule]) -> list[list[FilterRule]]:
+    """Group rules with identical conditions; order chains and rules by sort_order.
+
+    Datensonar exports one row per block with incrementing sort_order (e.g. four
+    ``status: full`` rows at sort_order 1..4). Containers matching that condition
+    spill across the merged regions in sort_order.
+    """
+    from collections import defaultdict
+
+    by_conditions: dict[tuple, list[FilterRule]] = defaultdict(list)
+    for rule in rules:
+        by_conditions[_rule_group_key(rule)].append(rule)
+
+    chains = [sorted(group, key=lambda r: r.sort_order) for group in by_conditions.values()]
+    chains.sort(key=lambda chain: chain[0].sort_order)
+    return chains
+
+
+def _merged_slot_sequence(
+    rules: list[FilterRule], index: dict[Coordinate3D, Slot], bounds: Bounds
+) -> Iterator[Slot]:
+    seen: set[Coordinate3D] = set()
+    for rule in rules:
+        for slot in slot_sequence(rule, index, bounds):
+            coord = slot.global_coord
+            if coord not in seen:
+                seen.add(coord)
+                yield slot
+
+
 def evaluate(
     strategy: Strategy,
     yard: Yard,
@@ -117,23 +151,32 @@ def evaluate(
 
     bounds = _bounds(index)
     rules = strategy.sorted_rules()
+    condition_chains = _condition_chains(rules)
     occupancy: dict[Slot, Container] = {}
 
-    # Group each container under the first rule it matches.
+    # Group each container under the first matching condition chain.
     groups: dict[int, list[Container]] = {}
     for container in containers:
-        matched = next((i for i, r in enumerate(rules) if r.matches(container)), None)
+        matched = next(
+            (
+                ci
+                for ci, chain in enumerate(condition_chains)
+                if chain[0].matches(container)
+            ),
+            None,
+        )
         if matched is None:
             unplaced.append(container)
         else:
             groups.setdefault(matched, []).append(container)
 
-    # Fill each rule's region with its members (rules in sort_order).
-    for i, rule in enumerate(rules):
-        members = groups.get(i)
+    # Fill each chain's merged regions with its members (chains in sort_order).
+    for ci, chain in enumerate(condition_chains):
+        members = groups.get(ci)
         if not members:
             continue
-        seq = slot_sequence(rule, index, bounds)
+        seq = _merged_slot_sequence(chain, index, bounds)
+        rule = chain[0]
         for container in _order_members(members, rule):
             slot = _next_free_supported(seq, occupancy)
             if slot is None:

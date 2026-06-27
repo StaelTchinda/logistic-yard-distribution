@@ -9,14 +9,14 @@ def _result(
     *,
     rehandles: int = 0,
     distance: float = 0.0,
-    balance: float = 0.0,
+    yard_dist: float = 0.0,
     unplaced: int = 0,
 ) -> tuple[Strategy, EvaluationResult]:
     strategy = Strategy(name, "")
     score = EvaluationResultScore(
         rehandles_count=rehandles,
         transport_distance=distance,
-        balanced_distribution=balance,
+        yard_distribution=yard_dist,
         unplaced_count=unplaced,
     )
     result = EvaluationResult(Yard([]), [], [], score)
@@ -25,9 +25,9 @@ def _result(
 
 def test_rank_strategies_assigns_per_metric_ranks_and_total():
     results = [
-        _result("A", rehandles=0, distance=100.0, balance=1.0, unplaced=0),
-        _result("B", rehandles=0, distance=50.0, balance=2.0, unplaced=0),
-        _result("C", rehandles=5, distance=50.0, balance=0.5, unplaced=10),
+        _result("A", rehandles=0, distance=100.0, yard_dist=1.0, unplaced=0),
+        _result("B", rehandles=0, distance=50.0, yard_dist=2.0, unplaced=0),
+        _result("C", rehandles=5, distance=50.0, yard_dist=0.5, unplaced=10),
     ]
     rankings = {row.strategy.name: row for row in rank_strategies(results)}
 
@@ -71,9 +71,9 @@ def test_rank_strategies_breaks_ties_by_input_order():
 
 def test_rank_strategies_returns_sorted_by_total_rank():
     results = [
-        _result("worst", rehandles=10, distance=100.0, balance=5.0, unplaced=5),
-        _result("best", rehandles=0, distance=10.0, balance=0.1, unplaced=0),
-        _result("middle", rehandles=2, distance=50.0, balance=1.0, unplaced=1),
+        _result("worst", rehandles=10, distance=100.0, yard_dist=5.0, unplaced=5),
+        _result("best", rehandles=0, distance=10.0, yard_dist=0.1, unplaced=0),
+        _result("middle", rehandles=2, distance=50.0, yard_dist=1.0, unplaced=1),
     ]
     ordered = rank_strategies(results)
 

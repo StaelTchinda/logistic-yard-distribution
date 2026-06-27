@@ -18,6 +18,7 @@ class EvaluationResultScore:
     manual_sort_effort: int = 0
     unplaced_count: int = 0
     balanced_distribution: float = 0.0
+    yard_distribution: float = 0.0
     weights: ScoreWeights = field(default=DEFAULT_WEIGHTS)  # frozen -> safe shared default
 
     def get_score(self) -> int:

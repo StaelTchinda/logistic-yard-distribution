@@ -3,7 +3,6 @@ import warnings
 from src.loaders import _parse_container_row, _parse_weight, load_containers, load_strategy, load_yard
 from src.loaders.paths import data_root
 from src.models import ContainerService, ContainerType, ContainerWeight
-from src.models.strategy import RuleOption
 
 
 def test_load_yard_yaml_matches_schema():
@@ -130,10 +129,12 @@ def test_load_containers_flattened_transport_columns():
 
 
 def test_load_strategy_rules():
-    strategy = load_strategy(data_root() / "strategies" / "quay_proximity.yaml")
-    assert len(strategy.rules) == 4
-    sea = strategy.sorted_rules()[0]
-    assert sea.conditions[0].attribute.value == "outbound_mode"
-    assert "deep_sea" in sea.conditions[0].values
-    assert sea.region.x == (10, 40)
-    assert RuleOption.WEIGHT_RELEVANT in sea.options
+    strategy = load_strategy(
+        data_root()
+        / "strategies"
+        / "2-strategie-advanced-allgemein-umschlag-fluss-v1-5-makuetche_2881.yaml"
+    )
+    assert len(strategy.rules) == 16
+    # Datensonar z:[1,1] is the ground tier only (0-based (0, 0)), not expanded to 5 tiers.
+    assert strategy.rules[0].region.z == (0, 0)
+    assert strategy.rules[0].conditions[0].attribute.value == "inbound_mode"

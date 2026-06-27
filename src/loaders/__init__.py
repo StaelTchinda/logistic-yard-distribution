@@ -332,6 +332,25 @@ def _range(value) -> tuple[int | None, int | None]:
     return (lo, hi)
 
 
+def _z_range(value) -> tuple[int | None, int | None]:
+    """Convert datensonar 1-based layer bounds to engine 0-based layers.
+
+    datensonar's ground tier is ``1``; engine layers start at ``0``. A single-tier
+    rule ``z:[1,1]`` means the ground layer only (``(0, 0)``) and is NOT expanded to
+    the full stack height -- expanding it forces phantom stacking that inflates
+    rehandles and over-places containers vs the reference. ``None`` bounds are
+    preserved (clip to yard extent).
+    """
+    lo, hi = _range(value)
+    if lo is None and hi is None:
+        return (None, None)
+    if lo is not None:
+        lo -= 1
+    if hi is not None:
+        hi -= 1
+    return (lo, hi)
+
+
 def _stacking(raw: dict) -> Stacking:
     start = StackStart(str(raw.get("start", "bottom_left")))
     order_axes = [Axis(str(a)) for a in raw.get("order", ["x", "y", "z"])]
@@ -358,7 +377,7 @@ def _rule(raw: dict) -> FilterRule:
         region=Region(
             x=_range(region_raw.get("x")),
             y=_range(region_raw.get("y")),
-            z=_range(region_raw.get("z")),
+            z=_z_range(region_raw.get("z")),
         ),
         skip=Skip(x=int(skip_raw.get("x", 0)), y=int(skip_raw.get("y", 0))),
         stacking=_stacking(raw.get("stacking") or {}),

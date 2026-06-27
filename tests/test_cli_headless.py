@@ -4,11 +4,21 @@ from src.cli import main
 def test_list_runs(capsys):
     assert main(["--list"]) == 0
     out = capsys.readouterr().out
-    assert "first_fit" in out and "simple_test_data" in out
+    assert "simple_test_data" in out and "test0_2275" in out
 
 
 def test_run_headless_prints_score(capsys):
-    rc = main(["--run", "--yard", "small", "--dataset", "simple_test_data", "--strategy", "first_fit"])
+    rc = main(
+        [
+            "--run",
+            "--yard",
+            "small",
+            "--dataset",
+            "simple_test_data",
+            "--strategy",
+            "test0_2275",
+        ]
+    )
     assert rc == 0
     assert "TOTAL" in capsys.readouterr().out
 

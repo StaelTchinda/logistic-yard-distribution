@@ -6,9 +6,8 @@ from src.models.scoring import (
     W_SORT,
     EvaluationResultScore,
     ScoreWeights,
-    balanced_distribution,
-    rehandles_count,
 )
+from src.services.scoring import balanced_distribution, rehandles_count
 from src.models.yard import Slot
 from tests.factories import make_container
 

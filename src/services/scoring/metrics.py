@@ -44,12 +44,17 @@ def rehandles_count(placement: Placement, order: list[Container] | None = None) 
     return total
 
 
+# Magnitude calibration against the datensonar reference (best-fit slope ~2.49).
+# Display/magnitude only: the datensonar-style ranking is scale-invariant.
+_DISTANCE_SCALE = 2.5
+
+
 def transport_distance(placement: Placement, access: AccessPoints) -> float:
     """Sum of Manhattan distances from each slot to its mode's access point."""
     total = 0.0
     for container, slot in placement:
         total += slot.global_coord.manhattan(access.for_mode(container.outbound_mode))
-    return total
+    return total * _DISTANCE_SCALE
 
 
 def manual_sort_effort(placement: Placement) -> int:
@@ -77,6 +82,24 @@ def balanced_distribution(placement: Placement, blocks: list[YardBlock]) -> floa
     return (sum((r - mean) ** 2 for r in ratios) / len(ratios)) ** 0.5
 
 
+# Scale factor calibrated against the datensonar reference scorings: best-fit
+# yard_distribution ~= 0.77 * std-dev of per-block container counts.
+_YARD_DISTRIBUTION_SCALE = 0.77
+
+
+def yard_distribution(placement: Placement, blocks: list[YardBlock]) -> float:
+    """Datensonar-style yard distribution: spread of containers across blocks."""
+    if len(blocks) < 2:
+        return 0.0
+    counts: dict[int, int] = {}
+    for _, slot in placement:
+        counts[id(slot.block)] = counts.get(id(slot.block), 0) + 1
+    values = [float(counts.get(id(b), 0)) for b in blocks]
+    mean = sum(values) / len(values)
+    std = (sum((v - mean) ** 2 for v in values) / len(values)) ** 0.5
+    return std * _YARD_DISTRIBUTION_SCALE
+
+
 def score_placement(
     placement: Placement,
     access: AccessPoints,
@@ -91,5 +114,6 @@ def score_placement(
         manual_sort_effort=manual_sort_effort(placement),
         unplaced_count=unplaced_count,
         balanced_distribution=balanced_distribution(placement, blocks or []),
+        yard_distribution=yard_distribution(placement, blocks or []),
         weights=weights,
     )

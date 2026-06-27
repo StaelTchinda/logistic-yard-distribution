@@ -58,7 +58,7 @@ def rank_strategies(
     rehandles_ranks = _assign_metric_ranks(results, lambda r: float(r.score.rehandles_count))
     distance_ranks = _assign_metric_ranks(results, lambda r: r.score.transport_distance)
     yard_ranks = _assign_metric_ranks(
-        results, lambda r: r.score.balanced_distribution
+        results, lambda r: r.score.yard_distribution
     )
     punishment_ranks = _assign_metric_ranks(
         results, lambda r: float(r.score.unplaced_count)
@@ -79,7 +79,7 @@ def rank_strategies(
             result=result,
             rehandles_value=float(result.score.rehandles_count),
             distance_value=result.score.transport_distance,
-            yard_distribution_value=result.score.balanced_distribution,
+            yard_distribution_value=result.score.yard_distribution,
             punishment_value=float(result.score.unplaced_count),
             rehandles_rank=rehandles_ranks[index],
             distance_rank=distance_ranks[index],

@@ -1,13 +1,10 @@
-"""Scoring: metrics, weights, access points, and result objects."""
+"""Scoring data models: weights, access points, and result objects.
+
+The metric *functions* live in ``src.services.scoring.metrics`` (services depend on
+models, not the reverse) -- import them from there, not from this package.
+"""
 
 from .access import AccessPoints
-from src.services.scoring.metrics import (
-    balanced_distribution,
-    manual_sort_effort,
-    rehandles_count,
-    score_placement,
-    transport_distance,
-)
 from .result import EvaluationResult, EvaluationResultScore
 from .weights import (
     DEFAULT_WEIGHTS,
@@ -30,9 +27,4 @@ __all__ = [
     "W_SORT",
     "W_UNPLACED",
     "W_BALANCE",
-    "rehandles_count",
-    "transport_distance",
-    "manual_sort_effort",
-    "balanced_distribution",
-    "score_placement",
 ]
