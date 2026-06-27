@@ -46,6 +46,35 @@ def scan_strategies(root: Path) -> list[CatalogEntry]:
     return entries
 
 
+def scan_distributions(root: Path) -> list[CatalogEntry]:
+    """Discover distribution CSVs named ``<yard>___<dataset>[___<id>].csv``.
+
+    The ``___``-separated stem identifies which yard and dataset a distribution belongs to (and an
+    optional strategy/label id); the parsed parts land in ``entry.extra`` for filtering.
+    """
+    entries: list[CatalogEntry] = []
+    dist_dir = root / "distributions"
+    if not dist_dir.is_dir():
+        return entries
+    for path in sorted(dist_dir.glob("*.csv")):
+        parts = path.stem.split("___")
+        yard = parts[0] if len(parts) >= 1 else ""
+        dataset = parts[1] if len(parts) >= 2 else ""
+        ident = parts[2] if len(parts) >= 3 else ""
+        description = " / ".join(p for p in (yard, dataset, ident) if p)
+        entries.append(
+            CatalogEntry(
+                path.stem,
+                ident or "(base)",
+                path,
+                "distribution",
+                description,
+                {"yard": yard, "dataset": dataset, "strategy": ident},
+            )
+        )
+    return entries
+
+
 def scan_containers(root: Path) -> list[CatalogEntry]:
     entries = []
     for path in sorted((root / "containers").glob("*.csv")):

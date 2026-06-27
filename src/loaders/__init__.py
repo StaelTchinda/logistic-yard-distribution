@@ -30,7 +30,15 @@ from src.models.strategy.utils import Region, Skip, Stacking
 from src.models.geometry import Coordinate2D
 from src.models.yard import Yard, YardBlock
 
-__all__ = ["load_yard", "load_containers", "load_strategy"]
+from src.loaders.distribution import DistributionLoadResult, load_distribution
+
+__all__ = [
+    "load_yard",
+    "load_containers",
+    "load_strategy",
+    "load_distribution",
+    "DistributionLoadResult",
+]
 
 
 # --------------------------------------------------------------------- yards

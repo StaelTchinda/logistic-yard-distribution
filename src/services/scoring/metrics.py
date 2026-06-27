@@ -50,10 +50,10 @@ _DISTANCE_SCALE = 2.5
 
 
 def transport_distance(placement: Placement, access: AccessPoints) -> float:
-    """Sum of Manhattan distances from each slot to its mode's access point."""
+    """Sum of travel distances from each slot to its mode's access (point or quay edge)."""
     total = 0.0
     for container, slot in placement:
-        total += slot.global_coord.manhattan(access.for_mode(container.outbound_mode))
+        total += access.distance(container.outbound_mode, slot.global_coord)
     return total * _DISTANCE_SCALE
 
 

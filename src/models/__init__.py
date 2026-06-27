@@ -1,6 +1,7 @@
 """Domain models for the yard distribution exercise."""
 
 from .container import Container
+from .distribution import Distribution
 from .enums import (
     ContainerService,
     ContainerStatus,
@@ -14,6 +15,7 @@ from .yard import Slot, Yard, YardBlock
 
 __all__ = [
     "Container",
+    "Distribution",
     "ContainerService",
     "ContainerStatus",
     "ContainerType",

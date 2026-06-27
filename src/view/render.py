@@ -17,6 +17,7 @@ from src.models.strategy.enum import RuleOption
 from src.models.strategy.strategy import Strategy
 from src.models.strategy.utils import Region, Stacking
 from src.models.yard import Yard
+from src.services.distribution import BlockStat
 from src.services.scoring.ranking import StrategyRanking
 from src.summary import ContainerSummary
 
@@ -324,6 +325,22 @@ def render_summary(summary: ContainerSummary):
     table.add_row("output name", fmt(summary.by_output_name))
     table.add_row("output carrier", fmt(summary.by_output_carrier))
     table.add_row("output liner", fmt(summary.by_output_liner))
+    return table
+
+
+def render_distribution_summary(stats: list[BlockStat], *, title: str = "Distribution by block"):
+    """Aggregated per-block view of a distribution: counts, fill %, outbound-mode mix."""
+    table = Table(title=title)
+    table.add_column("block")
+    table.add_column("containers", justify="right")
+    table.add_column("fill %", justify="right")
+    table.add_column("outbound modes")
+    total = 0
+    for stat in stats:
+        modes = ", ".join(f"{k}={v}" for k, v in sorted(stat.by_outbound_mode.items()))
+        table.add_row(stat.name, str(stat.count), f"{100 * stat.fill_ratio:.0f}%", modes or "—")
+        total += stat.count
+    table.add_row("[bold]total[/bold]", f"[bold]{total}[/bold]", "", "")
     return table
 
 
